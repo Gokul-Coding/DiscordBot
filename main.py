@@ -32,7 +32,7 @@ async def send_reminder(reminder_id):
             await asyncio.sleep(delay)
 
             if reminder_id in reminders:
-                await ctx.send(f"⏰ Reminder for {ctx.author.mention}: {message}")
+                await ctx.send(f"Reminder for {ctx.author.mention}: {message}")
                 del reminders[reminder_id]
     except asyncio.CancelledError:
         print(f"Reminder {reminder_id} was cancelled before execution")
@@ -51,7 +51,7 @@ async def remind(ctx, date: str, time: str, *, message: str):
         delay = (reminder_time - now).total_seconds()
 
         if delay <= 19800:
-            await ctx.send("⏰ You can't set a reminder for the past! Please enter a future date and time.")
+            await ctx.send("You can't set a reminder for the past! Please enter a future date and time.")
             return
 
         reminder_id = str(uuid.uuid4())[:8]
@@ -59,10 +59,10 @@ async def remind(ctx, date: str, time: str, *, message: str):
 
         reminders[reminder_id] = (ctx, message, delay-19800, task)
 
-        await ctx.send(f"✅ Reminder set! ID: `{reminder_id}` (Triggers at {date_time_str})")
+        await ctx.send(f"Reminder set! ID: `{reminder_id}` (Triggers at {date_time_str})")
 
     except ValueError:
-        await ctx.send("⚠️ Invalid date-time format! Use `YYYY-MM-DD HH:MM:SS` (e.g., `2025-03-06 15:30:00`).")
+        await ctx.send("Invalid date-time format! Use `YYYY-MM-DD HH:MM:SS` (e.g., `2025-03-06 15:30:00`).")
 
 @bot.command()
 async def remind_delete(ctx, reminder_id: str):
@@ -89,6 +89,10 @@ async def remind_modify(ctx, reminder_id: str, date: str, time : str, *,new_mess
         reminder_time = reminder_time.replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
         new_time = (reminder_time - now).total_seconds() - 19800
+
+        if new_time <= 0:
+            await ctx.send("You can't set a reminder for the past! Please enter a future date and time.")
+            return
 
         reminders[reminder_id] = (ctx, new_message, new_time, new_task)
         await ctx.send(f"Reminder '{reminder_id}' updated! New time: {new_time} seconds, New_message: {new_message}")
